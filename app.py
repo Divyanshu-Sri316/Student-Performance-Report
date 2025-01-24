@@ -1,40 +1,48 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 import pickle
 import numpy as np
 
-# Load the pre-trained and pickled model (replace 'model.pkl' with the actual file path)
-model = pickle.load(open('model.pkl', 'rb'))
-
-# Initialize Flask app
 app = Flask(__name__)
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+# Load model using pickle
+try:
+    with open("model.pkl", "rb") as model_file:
+        model = pickle.load(model_file)
+except Exception as e:
+    raise RuntimeError(f"Error loading model: {e}")
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    # Parse input JSON
-    data = request.json
+    try:
+        # Extract feature values from the request data
+        data = request.json
 
-    # Extract feature values from the input JSON (update keys to match your feature names)
-    feature_values = [
-        data['Gender'],
-        data['AttendanceRate'],
-        data['StudyHoursPerWeek'],
-        data['PreviousGrade'],
-        data['ExtracurricularActivities'],
-        data['ParentalSupport']
-    ]
+        # Feature extraction
+        feature_values = [
+            data['Gender'],                  # 1 for Male, 0 for Female
+            data['AttendanceRate'],          # Numeric value (e.g., percentage)
+            data['StudyHoursPerWeek'],       # Numeric value
+            data['PreviousGrade'],           # Numeric value
+            data['ExtracurricularActivities'],  # Numeric value (can be greater than 3)
+            data['ParentalSupport']          # Values between 1 to 3
+        ]
 
-    # Convert to NumPy array and reshape for prediction
-    feature_array = np.array(feature_values).reshape(1, -1)
+        # Input validation
+        if not (1 <= data['ParentalSupport'] <= 3):
+            return jsonify({"error": "ParentalSupport must be between 1 and 3"}), 400
 
-    # Make prediction using the loaded model
-    prediction = model.predict(feature_array)[0]
+        # Convert the features to a numpy array for prediction
+        feature_array = np.array(feature_values).reshape(1, -1)
 
-    # Return the prediction as JSON
-    return jsonify({'prediction': prediction})
+        # Make the prediction
+        prediction = model.predict(feature_array)[0]
+        return jsonify({"prediction": prediction})
+    except KeyError as ke:
+        return jsonify({"error": f"Missing key in input data: {ke}"}), 400
+    except ValueError as ve:
+        return jsonify({"error": f"Invalid value in input data: {ve}"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
