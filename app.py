@@ -24,7 +24,7 @@ def predict():
             data['StudyHoursPerWeek'],       # Numeric value
             data['PreviousGrade'],           # Numeric value
             data['ExtracurricularActivities'],  # Numeric value (can be greater than 3)
-            data['ParentalSupport']          # Values between 1 to 3
+            data['ParentalSupport']          # Values between 1 and 3
         ]
 
         # Input validation
@@ -32,7 +32,7 @@ def predict():
             return jsonify({"error": "ParentalSupport must be between 1 and 3"}), 400
 
         # Convert the features to a numpy array for prediction
-        feature_array = np.array(feature_values).reshape(1, -1)
+        feature_array = np.array(feature_values, dtype=np.float64).reshape(1, -1)
 
         # Make the prediction
         prediction = model.predict(feature_array)[0]
