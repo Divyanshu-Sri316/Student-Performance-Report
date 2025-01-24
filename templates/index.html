@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, button {
+            margin-top: 5px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background: #e9ecef;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Model Prediction</h1>
+        <form id="predictionForm">
+            <label for="Gender">Gender (1 for Male, 0 for Female):</label>
+            <input type="number" id="Gender" name="Gender" required>
+
+            <label for="AttendanceRate">Attendance Rate:</label>
+            <input type="number" id="AttendanceRate" name="AttendanceRate" step="0.01" required>
+
+            <label for="StudyHoursPerWeek">Study Hours Per Week:</label>
+            <input type="number" id="StudyHoursPerWeek" name="StudyHoursPerWeek" required>
+
+            <label for="PreviousGrade">Previous Grade:</label>
+            <input type="number" id="PreviousGrade" name="PreviousGrade" required>
+
+            <label for="ExtracurricularActivities">Extracurricular Activities (0 or 1):</label>
+            <input type="number" id="ExtracurricularActivities" name="ExtracurricularActivities" required>
+
+            <label for="ParentalSupport">Parental Support (0 or 1):</label>
+            <input type="number" id="ParentalSupport" name="ParentalSupport" required>
+
+            <button type="submit">Predict</button>
+        </form>
+        <div class="result" id="result" style="display:none;"></div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = {
+                Gender: parseFloat(document.getElementById('Gender').value),
+                AttendanceRate: parseFloat(document.getElementById('AttendanceRate').value),
+                StudyHoursPerWeek: parseFloat(document.getElementById('StudyHoursPerWeek').value),
+                PreviousGrade: parseFloat(document.getElementById('PreviousGrade').value),
+                ExtracurricularActivities: parseFloat(document.getElementById('ExtracurricularActivities').value),
+                ParentalSupport: parseFloat(document.getElementById('ParentalSupport').value)
+            };
+
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('result').innerHTML = `<strong>Prediction:</strong> ${result.prediction}`;
+        });
+    </script>
+</body>
+</html>
